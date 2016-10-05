@@ -66,7 +66,14 @@ fi
 while getopts ":hc:" opt; do
     case $opt in
 	c)
-	    COMMENT=${OPTARG}
+	    if [[ ! "${OPTARG}" =~ ^- ]]
+	    then
+		COMMENT="${OPTARG}"
+	    else
+		echo "Invalid option: -$OPTARG" >&2
+		usage
+		exit 3
+	    fi
 	    ;;
 	h)
 	    usage
@@ -74,6 +81,7 @@ while getopts ":hc:" opt; do
 	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
+	    usage
 	    exit 3
 	    ;;
 	:)
@@ -84,6 +92,9 @@ while getopts ":hc:" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+#echo ${COMMENT}
+#exit 0
 
 # Get a value of the positional parameter (an image name)
 IMAGE_NAME="${1}"
