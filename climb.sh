@@ -13,6 +13,7 @@ rm -f ${TEMP_FILE} 2> /dev/null
 # The function that displays help/usage for the script
 function usage()
 {
+    echo
     echo "Basic usage: ${0} -c 'a comment for the image' image.jpg"
     echo
     echo 'At least, one of the parameters need to be provided.'
