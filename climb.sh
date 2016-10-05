@@ -62,6 +62,14 @@ then
     exit 2
 fi
 
+# Check the case when the user provided to the script more than three parameters
+if [ $# -gt 3 ]
+then
+    echo "You have provided too many parameters!" >&2
+    usage
+    exit 2
+fi
+
 # If a user entered the command line like "./bash_json.sh image -c 'comment'" try to parse this string
 if [ "${2}" == "-c" ]
 then
