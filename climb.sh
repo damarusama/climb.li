@@ -63,7 +63,7 @@ then
 fi
 
 # Parsing -c and -h options
-while getopts ":hc:" opt; do
+while getopts ":hic:" opt; do
     case $opt in
 	c)
 	    if [[ ! "${OPTARG}" =~ ^- ]]
@@ -78,6 +78,9 @@ while getopts ":hc:" opt; do
 	h)
 	    usage
 	    exit 0
+	    ;;
+	i)
+	    echo "-i handles here!"
 	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
