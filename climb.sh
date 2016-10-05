@@ -54,7 +54,7 @@ function prepare_json_record()
     echo "${result}"
 }
 
-# Check a case when nothing is provided to the script
+# Check the case when nothing is provided to the script
 if [ -z "$*" ]
 then
     echo "At least, one of the parameters need to be provided!" >&2
@@ -62,15 +62,25 @@ then
     exit 2
 fi
 
-# Parsing -c and -h options
+# If a user entered the command line like "./bash_json.sh image -c 'comment'" try to parse this string
+if [ "${2}" == "-c" ]
+then
+    if [ ! -z "${1}" ]
+    then
+	IMAGE_NAME="${1}"
+	shift
+    fi
+fi
+
+# Parsing -c, -h and -i options
 while getopts ":hic:" opt; do
     case $opt in
 	c)
-	    if [[ ! "${OPTARG}" =~ ^- ]]
+	    if [[ ! "${OPTARG}" == -* ]]
 	    then
 		COMMENT="${OPTARG}"
 	    else
-		echo "Invalid option: -$OPTARG" >&2
+		echo "Invalid argument: $OPTARG" >&2
 		usage
 		exit 3
 	    fi
@@ -83,7 +93,7 @@ while getopts ":hic:" opt; do
 	    echo "-i handles here!"
 	    ;;
 	\?)
-	    echo "Invalid option: -$OPTARG" >&2
+	    echo "Invalid argument: $OPTARG" >&2
 	    usage
 	    exit 3
 	    ;;
