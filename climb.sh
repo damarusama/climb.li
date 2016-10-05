@@ -79,13 +79,17 @@ then
     exit 2
 fi
 
-# If a user entered the command line like "./bash_json.sh image -c 'comment'" try to parse this string
-if [ "${2}" == "-c" ]
+# If the first argument is positional
+if [ ! -z "${1}" ] && [ ! "${1}" == -* ]
 then
-    if [ ! -z "${1}" ]
+    if [ "${2}" == "-c" ]
     then
 	IMAGE_NAME="${1}"
 	shift
+    else
+	echo "Invalid command line. Please, check your syntax and try again." >&2
+	usage
+	exit 3
     fi
 fi
 
