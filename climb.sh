@@ -97,9 +97,6 @@ function update_remote_json()
     # Force delete the temp file before starting
     rm -f ${TEMP_FILE} 2> /dev/null
     
-    # Does the server supports batch mode?
-    BATCH_MODE=$(check_ssh_type ${USER_NAME} "${SERVER_ADDRESS}")
-    
     SCP_ERROR_MESSAGE=$(scp -q ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" ${TEMP_FILE} 2>&1 >/dev/null)
     SCP_RETURN_CODE=$(echo $?)
     if [ ${SCP_RETURN_CODE} -eq 0 ]
@@ -188,9 +185,9 @@ then
 fi
 
 # If the first argument is positional
-if [ ! -z "${1}" ] && [ ! "${1}" == -* ]
+if [ ! -z "${1}" ] && [[ ! "${1}" == -* ]]
 then
-    if [ "${2}" == "-c" ]
+    if [ "${2}" == "-c" ] || [ $# -eq 1 ]
     then
 	IMAGE_NAME="${1}"
 	shift
@@ -262,3 +259,13 @@ then
     echo "The script hasn't been setup properly. Please, fill a path to the image on the server in the variable SERVER_PATH in the head of the script" >&2
     exit 1
 fi
+
+# Does the server supports batch mode?
+BATCH_MODE=$(check_ssh_type ${USER_NAME} "${SERVER_ADDRESS}")
+
+if [ ${BATCH_MODE} == "false" ]
+then
+    echo -e "There is a problem with a connection to the server in a batch mode.\nIf you have not setup your server to use a public key for SSH connections, you can do this by using command 'ssh-copy-id'" >&2
+fi
+
+update_remote_json
