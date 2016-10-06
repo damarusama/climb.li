@@ -2,18 +2,13 @@
 ### FILL THESE VARIABLES TO CORRECT WORK OF THE SCRIPT ###
 USER_NAME=
 SERVER_ADDRESS=
-JSON_PATH=
-IMAGE_PATH=
+SERVER_PATH=
 ##########################################################
 ### DO NOT TOUCH THESE VARIABLES ###
 REMOTE_INDEX_HTML="http://ponnuki.me/index.default.html"
-INDEX_NAME=index.html
-JSON_NAME=content.json
+INDEX_NAME="index.html"
+JSON_NAME="content.json"
 ##########################################################
-
-TEMP_FILE="temp.json"
-# Force delete the temp file before starting
-rm -f ${TEMP_FILE} 2> /dev/null
 
 # The function that displays help/usage for the script
 function usage()
@@ -81,6 +76,91 @@ function check_ssh_type()
     fi
 
     echo ${BATCH_MODE}
+}
+
+function update_remote_json()
+{
+    local BATCH_MODE
+
+    # ${1} - USER_NAME
+    # ${2} - SERVER_ADDRESS
+    # ${3} - SERVER_PATH
+    # ${4} - IMAGE_NAME
+    # ${5} - COMMENT
+    #local USER_NAME="${1}"
+    #local SERVER_ADDRESS="${2}"
+    #local SERVER_PATH="${3}"
+    #local IMAGE_NAME="${4}"
+    #local COMMENT="${5}"
+    
+    local TEMP_FILE="temp.json"
+    # Force delete the temp file before starting
+    rm -f ${TEMP_FILE} 2> /dev/null
+    
+    # Does the server supports batch mode?
+    BATCH_MODE=$(check_ssh_type ${USER_NAME} "${SERVER_ADDRESS}")
+    
+    SCP_ERROR_MESSAGE=$(scp -q ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" ${TEMP_FILE} 2>&1 >/dev/null)
+    SCP_RETURN_CODE=$(echo $?)
+    if [ ${SCP_RETURN_CODE} -eq 0 ]
+    then
+	# The remote file is exists
+	JSON_IS_EMPTY=false
+    elif [ ${SCP_RETURN_CODE} -ne 0 ] && [[ "${SCP_ERROR_MESSAGE}" == *"No such file or directory" ]]
+    then
+	# The remote file is not exists
+	JSON_IS_EMPTY=true
+    else
+	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
+	exit 5
+    fi
+    
+    # If there is no JSON before, then create it
+    if [[ ${JSON_IS_EMPTY} == "true" ]]
+    then
+	json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\n')
+	echo -e "[\n${json_output}\n]" > ${TEMP_FILE}
+    else
+	if [ $(grep -Pzoq '\[[[:space:]]*{[[:space:]]*"comment"' ${TEMP_FILE} ; echo $?) -eq 0 ]
+	then
+	    temp_var="$(<${TEMP_FILE})"
+	    json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\t')
+	    # The case then the top record contains begins with word "comment"
+	    echo -e "${temp_var}" | tr '\n' '\t' | sed "s/\[[[:space:]]*\({[[:space:]]*\"comment\"\)/\[\t${json_output},\t\1/g" | tr '\t' '\n' > ${TEMP_FILE}
+	elif [ $(grep -Pzoq '\[[[:space:]]*{[[:space:]]*"img"' ${TEMP_FILE} ; echo $?) -eq 0 ]
+	then
+	    temp_var="$(<${TEMP_FILE})"
+	    json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\t')
+	    # The case then the top record contains begins with word "img"
+	    echo -e "${temp_var}" | tr '\n' '\t' | sed "s/\[[[:space:]]*\({[[:space:]]*\"img\"\)/\[\t${json_output},\t\1/g" | tr '\t' '\n' > ${TEMP_FILE}
+	else
+	    json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\n')
+	    # If there is no previous records in the JSON - just append new block to it
+	    echo -e "[\n${json_output}\n]" >> ${TEMP_FILE}
+	fi
+    fi
+    
+    # Upload the image and the result JSON file to the server
+    SCP_ERROR_MESSAGE=$(scp -q ${TEMP_FILE} ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" 2>&1 >/dev/null)
+    SCP_RETURN_CODE=$(echo $?)
+    if [ ${SCP_RETURN_CODE} -ne 0 ]
+    then
+	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
+	exit 5
+    fi
+    
+    if [ ! -z "${IMAGE_NAME}" ]
+    then
+	SCP_ERROR_MESSAGE=$(scp -q "${IMAGE_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}" 2>&1 >/dev/null)
+	SCP_RETURN_CODE=$(echo $?)
+	if [ ${SCP_RETURN_CODE} -ne 0 ]
+	then
+	    echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
+	    exit 5
+	fi
+    fi
+
+    rm -f ${TEMP_FILE}
 }
 
 # Check the case when nothing is provided to the script
@@ -172,93 +252,13 @@ then
     echo "The script hasn't been setup properly. Please, fill the server address in the variable SERVER_ADDRESS in the head of the script" >&2
     exit 1
 fi
-if [ -z "${JSON_PATH}" ]
+if [ -z "${SERVER_PATH}" ]
 then
-    echo "The script hasn't been setup properly. Please, fill a path to the JSON file on the server in the variable JSON_PATH in the head of the script" >&2
+    echo "The script hasn't been setup properly. Please, fill a path to the JSON file on the server in the variable SERVER_PATH in the head of the script" >&2
     exit 1
 fi
-if [ ! -z "${IMAGE_NAME}" ] && [ -z "${IMAGE_PATH}" ]
+if [ ! -z "${IMAGE_NAME}" ] && [ -z "${SERVER_PATH}" ]
 then
-    echo "The script hasn't been setup properly. Please, fill a path to the image on the server in the variable IMAGE_PATH in the head of the script" >&2
+    echo "The script hasn't been setup properly. Please, fill a path to the image on the server in the variable SERVER_PATH in the head of the script" >&2
     exit 1
 fi
-
-# Try to download JSON file from the server in batch mode
-SCP_BATCH_ERROR_MESSAGE=$(scp -Bq ${USER_NAME}@${SERVER_ADDRESS}:"${JSON_PATH}" ${TEMP_FILE} 2>&1 >/dev/null)
-SCP_BATCH_RETURN_CODE=$(echo $?)
-
-if [ ${SCP_BATCH_RETURN_CODE} -eq 0 ]
-then
-    BATCH_MODE=true
-    JSON_IS_EMPTY=false
-elif [ ${SCP_BATCH_RETURN_CODE} -ne 0 ] && [[ ${SCP_BATCH_ERROR_MESSAGE} == *"No such file or directory" ]]
-then
-    BATCH_MODE=true
-    JSON_IS_EMPTY=true
-else
-    # If the connection in batch mode is failed, try to download using common way
-    echo -e "There is a problem with a connection to the server in a batch mode.\nIf you have not setup your server to use a public key for SSH connections, you can do this by using command 'ssh-copy-id'" >&2
-    SCP_ERROR_MESSAGE=$(scp -q ${USER_NAME}@${SERVER_ADDRESS}:"${JSON_PATH}" ${TEMP_FILE} 2>&1 >/dev/null)
-    SCP_RETURN_CODE=$(echo $?)
-    if [ ${SCP_RETURN_CODE} -eq 0 ]
-    then
-	# The remote file is exists
-	BATCH_MODE=false
-	JSON_IS_EMPTY=false
-    elif [ ${SCP_RETURN_CODE} -ne 0 ] && [[ ${SCP_ERROR_MESSAGE} == *"No such file or directory" ]]
-    then
-	# The remote file is not exists
-	BATCH_MODE=false
-	JSON_IS_EMPTY=true
-    else
-	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
-	exit 5
-    fi
-fi
-
-# If there is no JSON before, then create it
-if [[ ${JSON_IS_EMPTY} == "true" ]]
-then
-    json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\n')
-    echo -e "[\n${json_output}\n]" > ${TEMP_FILE}
-else
-    if [ $(grep -Pzoq '\[[[:space:]]*{[[:space:]]*"comment"' ${TEMP_FILE} ; echo $?) -eq 0 ]
-    then
-	temp_var="$(<${TEMP_FILE})"
-	json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\t')
-	# The case then the top record contains begins with word "comment"
-	echo -e "${temp_var}" | tr '\n' '\t' | sed "s/\[[[:space:]]*\({[[:space:]]*\"comment\"\)/\[\t${json_output},\t\1/g" | tr '\t' '\n' > ${TEMP_FILE}
-    elif [ $(grep -Pzoq '\[[[:space:]]*{[[:space:]]*"img"' ${TEMP_FILE} ; echo $?) -eq 0 ]
-    then
-	temp_var="$(<${TEMP_FILE})"
-	json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\t')
-	# The case then the top record contains begins with word "img"
-	echo -e "${temp_var}" | tr '\n' '\t' | sed "s/\[[[:space:]]*\({[[:space:]]*\"img\"\)/\[\t${json_output},\t\1/g" | tr '\t' '\n' > ${TEMP_FILE}
-    else
-	json_output=$(prepare_json_record "${IMAGE_NAME}" "${COMMENT}" '\n')
-	# If there is no previous records in the JSON - just append new block to it
-	echo -e "[\n${json_output}\n]" >> ${TEMP_FILE}
-    fi
-fi
-
-# Upload the image and the result JSON file to the server
-SCP_ERROR_MESSAGE=$(scp -q ${TEMP_FILE} ${USER_NAME}@${SERVER_ADDRESS}:"${JSON_PATH}" 2>&1 >/dev/null)
-SCP_RETURN_CODE=$(echo $?)
-if [ ${SCP_RETURN_CODE} -ne 0 ]
-then
-    echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
-    exit 5
-fi
-
-if [ ! -z "${IMAGE_NAME}" ]
-then
-    SCP_ERROR_MESSAGE=$(scp -q "${IMAGE_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${IMAGE_PATH}" 2>&1 >/dev/null)
-    SCP_RETURN_CODE=$(echo $?)
-    if [ ${SCP_RETURN_CODE} -ne 0 ]
-    then
-	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
-	exit 5
-    fi
-fi
-
-rm -f ${TEMP_FILE}
