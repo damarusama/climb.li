@@ -59,6 +59,8 @@ function check_ssh_type()
 {
     # ${1} - USER_NAME
     # ${2} - SERVER_ADDRESS
+    local BATCH_MODE
+    
     SSH_BATCH_ERROR_MESSAGE=$(ssh -o BatchMode=yes ${1}@${2} who 2>&1 >/dev/null)
     SSH_BATCH_RETURN_CODE=$(echo $?)
     
