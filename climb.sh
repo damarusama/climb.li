@@ -55,6 +55,27 @@ function prepare_json_record()
     echo "${result}"
 }
 
+function check_ssh_type()
+{
+    # ${1} - USER_NAME
+    # ${2} - SERVER_ADDRESS
+    SSH_BATCH_ERROR_MESSAGE=$(ssh -o BatchMode=yes ${1}@${2} who 2>&1 >/dev/null)
+    SSH_BATCH_RETURN_CODE=$(echo $?)
+    
+    if [ ${SSH_BATCH_RETURN_CODE} -eq 0 ]
+    then
+	BATCH_MODE=true
+    elif [ ${SSH_BATCH_RETURN_CODE} -ne 0 ] && [[ "${SSH_BATCH_ERROR_MESSAGE}" == "Permission denied (publickey,password)"* ]]
+    then
+	BATCH_MODE=false
+    else
+	echo -e "There is an error in your SSH connection. The exit code is ${SSH_BATCH_RETURN_CODE}.\nThe error message: ${SSH_BATCH_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
+	exit 5
+    fi
+
+    echo ${BATCH_MODE}
+}
+
 # Check the case when nothing is provided to the script
 if [ -z "$*" ]
 then
