@@ -160,6 +160,8 @@ function update_remote_json()
     rm -f ${TEMP_FILE}
 }
 
+### ACTUAL RUNNING OF THE SCRIPT ###
+
 # Check the case when nothing is provided to the script
 if [ -z "$*" ]
 then
