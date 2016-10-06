@@ -4,7 +4,12 @@ USER_NAME=
 SERVER_ADDRESS=
 JSON_PATH=
 IMAGE_PATH=
-########################################################
+##########################################################
+### DO NOT TOUCH THESE VARIABLES ###
+REMOTE_INDEX_HTML="http://ponnuki.me/index.default.html"
+INDEX_NAME=index.html
+JSON_NAME=content.json
+##########################################################
 
 TEMP_FILE="temp.json"
 # Force delete the temp file before starting
