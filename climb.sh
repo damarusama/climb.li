@@ -163,7 +163,7 @@ function update_remote_json()
 function init()
 {
     # Test if the index file are already exists on the server
-    if [ $(ssh -q ${USER_NAME}@${SERVER_ADDRESS} "test -e ${INDEX_NAME}; echo $?") -eq 0 ]
+    if [ $(ssh -q ${USER_NAME}@${SERVER_ADDRESS} "test -e ${INDEX_NAME}"; echo $?) -eq 0 ]
     then
 	echo -e "Site is already initialized. Would you like to re-upload a new files?\nThis would wipe out any change you've made to your page!"
 	while true
