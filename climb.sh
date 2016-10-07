@@ -160,6 +160,51 @@ function update_remote_json()
     rm -f ${TEMP_FILE}
 }
 
+function init()
+{
+    # Test if the index file are already exists on the server
+    if [ $(ssh -q ${USER_NAME}@${SERVER_ADDRESS} "test -e ${INDEX_NAME}; echo $?") -eq 0 ]
+    then
+	echo -e "Site is already initialized. Would you like to re-upload a new files?\nThis would wipe out any change you've made to your page!"
+	while true
+	do
+	    read -r -p "Are you sure? [Y/N] " input
+	    case $input in
+		[yY])
+		    break
+		    ;;
+		
+		[nN])
+		    exit 0
+	       	    ;;
+		
+		*)
+		    echo "Please enter Y or N."
+		    ;;
+	    esac
+	done
+    fi
+    
+    # Download the index page template and save it under the name ${INDEX_NAME}
+    if [ $(curl -s -o "${INDEX_NAME}" "${REMOTE_INDEX_HTML}"; echo $?) -ne 0 ]
+    then
+	echo "There is some error in 'curl' when downloading from the ${REMOTE_INDEX_HTML}" 2>&1
+	exit 6
+    fi
+    
+    # Upload the index page to the server
+    SCP_ERROR_MESSAGE=$(scp -q "${INDEX_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" 2>&1 >/dev/null)
+    SCP_RETURN_CODE=$(echo $?)
+    if [ ${SCP_RETURN_CODE} -ne 0 ]
+    then
+	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
+	exit 5
+    fi
+    
+    # Remove useless copy of the ${INDEX_NAME}
+    rm -f "${INDEX_NAME}"
+}
+
 ### ACTUAL RUNNING OF THE SCRIPT ###
 
 # Check the case when nothing is provided to the script
