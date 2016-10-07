@@ -186,7 +186,7 @@ function init()
     fi
     
     # Download the index page template and save it under the name ${INDEX_NAME}
-    if [ $(curl -s -o "${INDEX_NAME}" "${REMOTE_INDEX_HTML}"; echo $?) -ne 0 ]
+    if [ $(curl -s -o "${INDEX_NAME}" -w "%{http_code}" "${REMOTE_INDEX_HTML}") -ne 200 ]
     then
 	echo "There is some error in 'curl' when downloading from the ${REMOTE_INDEX_HTML}" 2>&1
 	exit 6
