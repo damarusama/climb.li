@@ -96,7 +96,8 @@ function update_remote_json()
     local TEMP_FILE="temp.json"
     # Force delete the temp file before starting
     rm -f ${TEMP_FILE} 2> /dev/null
-    
+
+    echo "Trying to download the JSON file from the server"
     SCP_ERROR_MESSAGE=$(scp -q ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" ${TEMP_FILE} 2>&1 >/dev/null)
     SCP_RETURN_CODE=$(echo $?)
     if [ ${SCP_RETURN_CODE} -eq 0 ]
@@ -111,7 +112,8 @@ function update_remote_json()
 	echo -e "There is an error in your SSH connection. The exit code is ${SCP_RETURN_CODE}.\nThe error message: ${SCP_ERROR_MESSAGE}\nPlease, review values of the variables in the head of the script."
 	exit 5
     fi
-    
+
+    echo "Processing of the JSON file"
     # If there is no JSON before, then create it
     if [[ ${JSON_IS_EMPTY} == "true" ]]
     then
@@ -138,6 +140,7 @@ function update_remote_json()
     fi
     
     # Upload the image and the result JSON file to the server
+    echo "Uploading an updated JSON to the server"
     SCP_ERROR_MESSAGE=$(scp -q ${TEMP_FILE} ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" 2>&1 >/dev/null)
     SCP_RETURN_CODE=$(echo $?)
     if [ ${SCP_RETURN_CODE} -ne 0 ]
@@ -148,6 +151,7 @@ function update_remote_json()
     
     if [ ! -z "${IMAGE_NAME}" ]
     then
+	echo "Uploading the image ${IMAGE_NAME} to the server"
 	SCP_ERROR_MESSAGE=$(scp -q "${IMAGE_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}" 2>&1 >/dev/null)
 	SCP_RETURN_CODE=$(echo $?)
 	if [ ${SCP_RETURN_CODE} -ne 0 ]
