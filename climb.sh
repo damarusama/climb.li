@@ -329,7 +329,7 @@ then
     echo -e "There is a problem with a connection to the server in a batch mode.\nIf you have not setup your server to use a public key for SSH connections, you can do this by using command 'ssh-copy-id'" >&2
 fi
 
-if [[ ${INIT_MODE} ]]
+if [[ ${INIT_MODE} == "true" ]]
 then
     init
 else
