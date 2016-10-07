@@ -329,4 +329,9 @@ then
     echo -e "There is a problem with a connection to the server in a batch mode.\nIf you have not setup your server to use a public key for SSH connections, you can do this by using command 'ssh-copy-id'" >&2
 fi
 
-update_remote_json
+if [[ ${INIT_MODE} ]]
+then
+    init
+else
+    update_remote_json
+fi
