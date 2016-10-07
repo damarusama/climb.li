@@ -14,18 +14,13 @@ JSON_NAME="content.json"
 function usage()
 {
     echo
-    echo "Basic usage: ${0} -c 'a comment for the image' image.jpg"
-    echo
-    echo 'At least, one of the parameters need to be provided.'
-    echo 'The script tries to download a JSON file using a path in the variable JSON_PATH in the head of the script.'
-    echo 'Next, the script creates the JSON file, if not exists, '
-    echo 'and appends to the top of it a new record with "img":"image command line parameter" and '
-    echo '"comment":"a comment from the -c command line option" key/value pairs. '
-    echo 'Finally, the script push using scp: the image to the server using '
-    echo 'the variable IMAGE_PATH in the head of the script, '
-    echo 'the result JSON file using the variable JSON_PATH.'
-    echo 'The user name and the server address of the connection to the server '
-    echo 'are contained in the variables USER_NAME and SERVER_ADDRESS in the head of the script.'
+    echo "To initialize your server:"
+    echo "${0} -i"
+    echo 
+    echo "To upload a new record to your blog:"
+    echo "${0} -c 'a comment for the image' image.jpg"
+    echo OR
+    echo "${0} image.jpg -c 'a comment for the image'"
     echo
     echo "Return codes:"
     echo "1 - missing values in the variables in the head of the script"
@@ -33,6 +28,7 @@ function usage()
     echo "3 - provided invalid command line"
     echo "4 - not provided value for the option -c"
     echo "5 - some troubles with SSH connection"
+    echo "6 - some troubles with downloading of the ${INDEX_NAME}"
     echo
     echo "For print this help type ${0} -h"
 }
