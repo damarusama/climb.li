@@ -299,7 +299,10 @@ shift $((OPTIND-1))
 #exit 0
 
 # Get a value of the positional parameter (an image name)
-IMAGE_NAME="${1}"
+if [ ! -z "${1}" ]
+then
+    IMAGE_NAME="${1}"
+fi
 
 # The block that checks all variables in the header of the script that need to be filled
 if [ -z ${USER_NAME} ]
