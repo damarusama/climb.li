@@ -193,7 +193,7 @@ function init()
     fi
     
     # Upload the index page to the server
-    SCP_ERROR_MESSAGE=$(scp -q "${INDEX_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${JSON_NAME}" 2>&1 >/dev/null)
+    SCP_ERROR_MESSAGE=$(scp -q "${INDEX_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}${INDEX_NAME}" 2>&1 >/dev/null)
     SCP_RETURN_CODE=$(echo $?)
     if [ ${SCP_RETURN_CODE} -ne 0 ]
     then
