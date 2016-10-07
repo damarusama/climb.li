@@ -30,7 +30,7 @@ function usage()
     echo "Return codes:"
     echo "1 - missing values in the variables in the head of the script"
     echo "2 - no command line parameters are provided"
-    echo "3 - provided invalid option"
+    echo "3 - provided invalid command line"
     echo "4 - not provided value for the option -c"
     echo "5 - some troubles with SSH connection"
     echo
@@ -257,13 +257,27 @@ while getopts ":hic:" opt; do
 		usage
 		exit 3
 	    fi
+	    
+	    if [[ ${INIT_MODE} == "true" ]]
+	    then
+		echo "Invalid command line. Please, check your syntax and try again." >&2
+		usage
+		exit 3
+	    fi
+	    INIT_MODE=false
 	    ;;
 	h)
 	    usage
 	    exit 0
 	    ;;
 	i)
-	    echo "-i handles here!"
+	    if [[ ${INIT_MODE} == "false" ]]
+	    then
+		echo "Invalid command line. Please, check your syntax and try again." >&2
+		usage
+		exit 3
+	    fi
+	    INIT_MODE=true
 	    ;;
 	\?)
 	    echo "Invalid argument: $OPTARG" >&2
