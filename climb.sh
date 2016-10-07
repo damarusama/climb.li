@@ -331,7 +331,11 @@ fi
 
 if [[ ${INIT_MODE} == "true" ]]
 then
+    echo "Initialize your site"
     init
 else
+    echo "Update your JSON and upload the image ${IMAGE_NAME}"
     update_remote_json
 fi
+
+echo "Done!"
