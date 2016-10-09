@@ -5,7 +5,7 @@ SERVER_ADDRESS=
 SERVER_PATH=
 ##########################################################
 ### DO NOT TOUCH THESE VARIABLES ###
-REMOTE_INDEX_HTML="http://ponnuki.me/index.default.html"
+REMOTE_INDEX_HTML="http://climb.li/index.default.html"
 INDEX_NAME="index.html"
 JSON_NAME="content.json"
 ##########################################################
