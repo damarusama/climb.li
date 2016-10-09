@@ -148,7 +148,7 @@ function update_remote_json()
     if [ ! -z "${IMAGE_NAME}" ]
     then
 	echo "Uploading the image ${IMAGE_NAME} to the server"
-	SCP_ERROR_MESSAGE=$(scp -q "${IMAGE_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}" 2>&1 >/dev/null)
+	SCP_ERROR_MESSAGE=$(scp -rq "${IMAGE_NAME}" ${USER_NAME}@${SERVER_ADDRESS}:"${SERVER_PATH}" 2>&1 >/dev/null)
 	SCP_RETURN_CODE=$(echo $?)
 	if [ ${SCP_RETURN_CODE} -ne 0 ]
 	then
