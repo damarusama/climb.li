@@ -233,6 +233,7 @@ function init()
 # Check the case when nothing is provided to the script
 if [ -z "$*" ]
 then
+    art
     echo "At least, one of the parameters need to be provided!" >&2
     usage
     exit 2
