@@ -10,6 +10,27 @@ INDEX_NAME="index.html"
 JSON_NAME="content.json"
 ##########################################################
 
+
+# Function to display the art work
+
+function art()
+{
+    echo -e "\E[31m "
+    echo "      ___           ___                   ___           ___     "
+    echo "     /\  \         /\__\      ___        /\__\         /\  \    "
+    echo "    /::\  \       /:/  /     /\  \      /::|  |       /::\  \   "
+    echo "   /:/\:\  \     /:/  /      \:\  \    /:|:|  |      /:/\:\  \  "
+    echo "  /:/  \:\  \   /:/  /       /::\__\  /:/|:|__|__   /::\~\:\__\ "
+    echo " /:/__/ \:\__\ /:/__/     __/:/\/__/ /:/ |::::\__\ /:/\:\ \:|__|"
+    echo " \:\  \  \/__/ \:\  \    /\/:/  /    \/__/~~/:/  / \:\~\:\/:/  /"
+    echo "  \:\  \        \:\  \   \::/__/           /:/  /   \:\ \::/  / "
+    echo "   \:\  \        \:\  \   \:\__\          /:/  /     \:\/:/  /  "
+    echo "    \:\__\        \:\__\   \/__/         /:/  /       \::/__/   "
+    echo "     \/__/         \/__/                 \/__/         ~~       "
+    echo "                Command Line Interface Micro Blog"
+    echo -e "\033[0m"  
+}
+
 # The function that displays help/usage for the script
 function usage()
 {
@@ -335,22 +356,9 @@ then
 fi
 
 if [[ ${INIT_MODE} == "true" ]]
-then
-    echo -e "\E[31m "
-    echo "      ___           ___                   ___           ___     "
-    echo "     /\  \         /\__\      ___        /\__\         /\  \    "
-    echo "    /::\  \       /:/  /     /\  \      /::|  |       /::\  \   "
-    echo "   /:/\:\  \     /:/  /      \:\  \    /:|:|  |      /:/\:\  \  "
-    echo "  /:/  \:\  \   /:/  /       /::\__\  /:/|:|__|__   /::\~\:\__\ "
-    echo " /:/__/ \:\__\ /:/__/     __/:/\/__/ /:/ |::::\__\ /:/\:\ \:|__|"
-    echo " \:\  \  \/__/ \:\  \    /\/:/  /    \/__/~~/:/  / \:\~\:\/:/  /"
-    echo "  \:\  \        \:\  \   \::/__/           /:/  /   \:\ \::/  / "
-    echo "   \:\  \        \:\  \   \:\__\          /:/  /     \:\/:/  /  "
-    echo "    \:\__\        \:\__\   \/__/         /:/  /       \::/__/   "
-    echo "     \/__/         \/__/                 \/__/         ~~       "
-    echo "                Command Line Interface Micro Blog"
-    echo -e "\033[0m"    
+then  
     echo "Initialize your site"
+    art
     init
 else
     echo "Update your JSON and upload the image ${IMAGE_NAME}"
